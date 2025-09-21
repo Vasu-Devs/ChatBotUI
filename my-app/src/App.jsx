@@ -154,7 +154,7 @@ const Sidebar = ({
   onChatSelect,
   onSettingsClick 
 }) => {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   
   return (
     <div className={`${isCollapsed ? 'w-0' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} border-r ${colors.border} flex flex-col`}>
@@ -182,7 +182,7 @@ const Sidebar = ({
         </div>
 
         {/* Chat History */}
-        <div className="flex-1 px-3 space-y-1 overflow-y-auto">
+        <div className={`flex-1 px-3 space-y-1 overflow-y-auto scrollbar-custom ${isDark ? 'scrollbar-dark' : 'scrollbar-light'}`}>
           <h3 className={`text-xs font-medium ${colors.textMuted} uppercase tracking-wide mb-2`}>
             Recent Chats
           </h3>
@@ -368,9 +368,12 @@ const WelcomeScreen = ({ selectedSchool, onSuggestionClick }) => {
   );
 };
 
-const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick }) => (
-  <div className="flex-1 overflow-y-auto">
-    {messages.length === 0 ? (
+const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick }) => {
+  const { isDark } = useTheme();
+  
+  return (
+    <div className={`flex-1 overflow-y-auto scrollbar-custom ${isDark ? 'scrollbar-dark' : 'scrollbar-light'}`}>
+      {messages.length === 0 ? (
       <WelcomeScreen 
         selectedSchool={selectedSchool} 
         onSuggestionClick={onSuggestionClick}
@@ -388,8 +391,11 @@ const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick }) => 
         {isTyping && <TypingIndicator />}
       </div>
     )}
-  </div>
-);
+    </div>
+  );
+};
+
+// Input Components
 
 // Input Components
 const MessageInput = ({ 
@@ -398,28 +404,47 @@ const MessageInput = ({
   onKeyPress, 
   onSend, 
   textareaRef,
-  disabled = false 
+  disabled = false,
+  onVoiceMode
 }) => {
-  const { colors } = useTheme();
-  
+  const { colors, isDark } = useTheme(); // <- Added isDark here
+
   return (
     <div className={`border-t ${colors.border} p-4`}>
       <div className="max-w-3xl mx-auto">
-        <div className={`flex items-end gap-3 ${colors.bgInput} ${colors.border} border rounded-2xl px-4 py-2`}>
+        <div
+          className={`flex items-center gap-3 ${colors.bgInput} ${colors.border} border rounded-2xl px-4 py-2`}
+        >
           <textarea
             ref={textareaRef}
             value={message}
             onChange={onChange}
             onKeyPress={onKeyPress}
             placeholder="Ask about college policies..."
-            className={`flex-1 bg-transparent resize-none outline-none ${colors.text} placeholder:${colors.textMuted} max-h-32`}
+            className={`
+              flex-1 
+              bg-transparent 
+              resize-none 
+              outline-none 
+              ${colors.text} 
+              placeholder:${colors.textMuted} 
+              max-h-32 
+              py-2 
+              overflow-y-auto 
+              scrollbar-custom ${isDark ? 'scrollbar-dark' : 'scrollbar-light'}
+            `}
             rows={1}
             disabled={disabled}
           />
-          <div className="flex gap-2 pb-1">
-            <button className={`p-2 rounded-lg transition-colors hover:${colors.bgHover}`}>
+
+          <div className="flex gap-2">
+            <button
+              className={`p-2 rounded-lg transition-colors hover:${colors.bgHover}`}
+              onClick={() => onVoiceMode(true)}
+            >
               <Mic size={18} className={colors.textMuted.replace('text-', 'text-')} />
             </button>
+
             <button
               onClick={onSend}
               disabled={!message.trim() || disabled}
@@ -429,6 +454,7 @@ const MessageInput = ({
             </button>
           </div>
         </div>
+
         <p className={`text-xs ${colors.textMuted} text-center mt-2`}>
           College Assistant can make mistakes. Verify important information with official college resources.
         </p>
@@ -436,6 +462,65 @@ const MessageInput = ({
     </div>
   );
 };
+
+const VoiceModeOverlay = ({ onSend, onCancel }) => {
+  const { colors } = useTheme();
+  const [isListening, setIsListening] = useState(false);
+  const [voiceText, setVoiceText] = useState('');
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setVoiceText(transcript);
+    };
+
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+    setIsListening(true);
+    recognitionRef.current = recognition;
+
+    return () => recognition.stop();
+  }, []);
+
+  return (
+    <div className={`absolute inset-0 ${colors.bg} flex flex-col items-center justify-center z-50`}>
+      <div className="flex flex-col items-center gap-6">
+        <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}>
+          <Mic size={32} className="text-white" />
+        </div>
+        <p className={`${colors.text} text-center`}>Speak now...</p>
+        <p className={`${colors.textMuted} text-sm`}>{voiceText}</p>
+        <div className="flex gap-4">
+          <button
+            className={`px-4 py-2 rounded-lg ${colors.buttonPrimary}`}
+            onClick={() => { onSend(voiceText); setVoiceText(''); }}
+          >
+            Send
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg ${colors.button}`}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 // Main Component
 const CollegeChatGPT = () => {
@@ -445,6 +530,7 @@ const CollegeChatGPT = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
   const textareaRef = useRef(null);
 
   const schools = [
@@ -469,12 +555,13 @@ const CollegeChatGPT = () => {
     'Internship requirements'
   ];
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
+  const handleSendMessage = async (inputMessage) => {
+    const msgText = inputMessage ?? message;
+    if (!msgText.trim()) return;
     
     const userMessage = {
       id: Date.now(),
-      text: message,
+      text: msgText,
       sender: 'user',
       timestamp: new Date().toLocaleTimeString()
     };
@@ -487,7 +574,7 @@ const CollegeChatGPT = () => {
     setTimeout(() => {
       const botResponse = {
         id: Date.now() + 1,
-        text: `I understand you're asking about "${message}" regarding ${selectedSchool}. I'll help you find the relevant college policies and information. This would typically connect to your FastAPI backend to fetch the appropriate response based on the selected department.`,
+        text: `I understand you're asking about "${msgText}" regarding ${selectedSchool}. I'll help you find the relevant college policies and information. This would typically connect to your FastAPI backend to fetch the appropriate response based on the selected department.`,
         sender: 'bot',
         timestamp: new Date().toLocaleTimeString()
       };
@@ -554,6 +641,16 @@ const CollegeChatGPT = () => {
           onSelectSchool={handleSelectSchool}
         />
 
+        {voiceMode && (
+          <VoiceModeOverlay
+            onSend={(msg) => {
+              handleSendMessage(msg); // treat like normal chat
+              setVoiceMode(false);
+            }}
+            onCancel={() => setVoiceMode(false)}
+          />
+        )}
+
         <ChatArea
           messages={messages}
           isTyping={isTyping}
@@ -568,6 +665,7 @@ const CollegeChatGPT = () => {
           onSend={handleSendMessage}
           textareaRef={textareaRef}
           disabled={isTyping}
+          onVoiceMode={setVoiceMode}
         />
       </div>
     </div>
