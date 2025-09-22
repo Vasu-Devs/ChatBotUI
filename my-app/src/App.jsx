@@ -174,8 +174,7 @@ const Sidebar = ({
   onHistory, 
   onChatSelect,
   onSettingsClick,
-  onToggleSidebar,
-  sidebarCollapsed
+  onToggleSidebar
 }) => {
   const { colors, isDark } = useTheme();
   
@@ -438,7 +437,7 @@ const WelcomeScreen = ({ selectedSchool, onSuggestionClick }) => {
   return (
     <div className="h-full flex flex-col px-4 pt-16">
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="text-center max-w-md mb-8">
+        <div className="text-center max-w-2xl mb-8">
           <BookOpen size={48} className={`mx-auto mb-6 ${colors.textMuted}`} />
           <h2 className={`text-3xl font-semibold mb-4 ${colors.text}`}>How can I help you?</h2>
           <p className={`${colors.textSecondary} mb-8`}>
@@ -475,7 +474,7 @@ const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick }) => 
       />
     ) : (
       <div className="px-4 py-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-5xl mx-auto space-y-6">
           {messages.map((msg) => (
             <MessageBubble
               key={msg.id}
@@ -502,7 +501,6 @@ const MessageInput = ({
   onSend, 
   textareaRef,
   disabled = false,
-  onVoiceMode,
   onSimpleVoiceMode,
   isWelcomeScreen = false
 }) => {
@@ -526,8 +524,8 @@ const MessageInput = ({
     }}>
       <div className={`mx-auto transition-all duration-500 ${
         isWelcomeScreen && !hasExpanded 
-          ? 'max-w-md' 
-          : 'max-w-3xl'
+          ? 'max-w-2xl' 
+          : 'max-w-5xl'
       }`}
       style={{
         transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
