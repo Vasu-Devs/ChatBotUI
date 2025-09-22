@@ -16,7 +16,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  Waves,
+  Radio,
+  GraduationCap,
+  PanelLeftClose,
+  Copy,
+  Check
 } from 'lucide-react';
 
 // Theme Context
@@ -39,37 +45,47 @@ const ThemeProvider = ({ children }) => {
     isDark,
     toggleTheme,
     colors: isDark ? {
-      // Dark mode - ChatGPT style grays
-      bg: 'bg-zinc-900',
-      bgSecondary: 'bg-zinc-950',
-      bgTertiary: 'bg-zinc-800',
-      bgHover: 'bg-zinc-700',
-      bgInput: 'bg-zinc-800',
-      border: 'border-zinc-700',
-      text: 'text-white',
-      textSecondary: 'text-zinc-400',
-      textMuted: 'text-zinc-500',
-      userBubble: 'bg-zinc-600',
-      botBubble: 'bg-zinc-800',
-      button: 'bg-zinc-800 hover:bg-zinc-700',
-      buttonPrimary: 'bg-emerald-600 hover:bg-emerald-700',
-      accent: 'bg-emerald-600'
+      // Dark mode - Lighter main background, darker sidebar with blended buttons
+      bg: 'bg-neutral-800',
+      bgSecondary: 'bg-neutral-900',
+      bgTertiary: 'bg-neutral-700',
+      bgHover: 'bg-neutral-700',
+      bgInput: 'bg-neutral-800',
+      border: 'border-neutral-600',
+      text: 'text-neutral-200',
+      textSecondary: 'text-neutral-300',
+      textMuted: 'text-neutral-400',
+      userBubble: 'bg-neutral-700',
+      userBubbleText: 'text-white',
+      userBubbleTextMuted: 'text-neutral-200',
+      botBubble: 'bg-neutral-700',
+      botIcon: 'bg-neutral-700',
+      botIconText: 'text-white',
+      button: 'bg-neutral-800 hover:bg-neutral-700',
+      buttonPrimary: 'bg-neutral-700 hover:bg-neutral-600',
+      suggestionCard: 'bg-neutral-700 hover:bg-neutral-600',
+      accent: 'bg-neutral-700'
     } : {
-      // Light mode
+      // Light mode - Clean neutral theme, no colors
       bg: 'bg-white',
-      bgSecondary: 'bg-gray-50',
-      bgTertiary: 'bg-gray-100',
-      bgHover: 'bg-gray-200',
+      bgSecondary: 'bg-neutral-100',
+      bgTertiary: 'bg-neutral-50',
+      bgHover: 'bg-neutral-100',
       bgInput: 'bg-white',
-      border: 'border-gray-200',
-      text: 'text-gray-900',
-      textSecondary: 'text-gray-600',
-      textMuted: 'text-gray-500',
-      userBubble: 'bg-blue-500',
-      botBubble: 'bg-gray-100',
-      button: 'bg-white hover:bg-gray-50 border border-gray-200',
-      buttonPrimary: 'bg-blue-500 hover:bg-blue-600',
-      accent: 'bg-blue-500'
+      border: 'border-neutral-200',
+      text: 'text-neutral-700',
+      textSecondary: 'text-neutral-600',
+      textMuted: 'text-neutral-500',
+      userBubble: 'bg-neutral-200',
+      userBubbleText: 'text-neutral-800',
+      userBubbleTextMuted: 'text-neutral-600',
+      botBubble: 'bg-neutral-100',
+      botIcon: 'bg-neutral-300',
+      botIconText: 'text-neutral-600',
+      button: 'bg-neutral-50 hover:bg-neutral-100',
+      buttonPrimary: 'bg-neutral-600 hover:bg-neutral-700',
+      suggestionCard: 'bg-neutral-50 hover:bg-neutral-100',
+      accent: 'bg-neutral-600'
     }
   };
   
@@ -87,7 +103,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className={`p-2 rounded-lg transition-colors ${colors.button}`}
+      className={`p-2 rounded-lg transition-colors ${colors.bgTertiary} hover:${colors.bgHover}`}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -96,15 +112,16 @@ const ThemeToggle = () => {
 };
 
 // Sidebar Components
-const SidebarButton = ({ icon: Icon, children, onClick, className = "" }) => {
-  const { colors } = useTheme();
+const SidebarButton = ({ icon: Icon, children, onClick, className = "", isCollapsed = false }) => {
+  const { colors, isDark } = useTheme();
   return (
     <button 
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${colors.bgHover} ${className}`}
+      className={`w-full flex items-center ${isCollapsed ? 'justify-center px-3 py-3 rounded-2xl' : 'gap-4 px-4 py-3 rounded-2xl'} transition-all duration-300 ${isDark && !isCollapsed ? 'bg-neutral-800' : ''} hover:${colors.bgHover} hover:scale-105 ${colors.textSecondary} ${className}`}
+      title={isCollapsed ? children : undefined}
     >
       <Icon size={18} />
-      <span className="text-sm">{children}</span>
+      {!isCollapsed && <span className="text-sm font-medium">{children}</span>}
     </button>
   );
 };
@@ -121,24 +138,28 @@ const ChatHistoryItem = ({ chat, onClick }) => {
   );
 };
 
-const UserSection = ({ userName, userType, onSettingsClick }) => {
+const UserSection = ({ userName, userType, onSettingsClick, isCollapsed = false }) => {
   const { colors } = useTheme();
   return (
-    <div className={`p-3 border-t ${colors.border}`}>
-      <div className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:${colors.bgHover} transition-colors cursor-pointer`}>
-        <div className={`w-8 h-8 ${colors.accent} rounded-full flex items-center justify-center`}>
-          <User size={16} className="text-white" />
+    <div className={`p-4`}>
+      <div className={`flex items-center ${isCollapsed ? 'justify-center px-0 py-2' : 'gap-4 px-4 py-3 rounded-2xl hover:scale-105'} transition-all duration-300 cursor-pointer ${isCollapsed ? '' : `hover:${colors.bgHover}`}`}>
+        <div className={`${isCollapsed ? 'w-9 h-9' : 'w-9 h-9'} ${colors.accent} rounded-full flex items-center justify-center`} style={{borderRadius: '50%'}}>
+          <User size={isCollapsed ? 18 : 18} className="text-white" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{userName}</p>
-          <p className={`text-xs ${colors.textMuted}`}>{userType}</p>
-        </div>
-        <button 
-          onClick={onSettingsClick}
-          className={`px-3 py-1 rounded-md text-xs transition-colors ${colors.button}`}
-        >
-          Settings
-        </button>
+        {!isCollapsed && (
+          <>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">{userName}</p>
+              <p className={`text-xs ${colors.textMuted}`}>{userType}</p>
+            </div>
+            <button 
+              onClick={onSettingsClick}
+              className={`p-2 rounded-xl transition-all duration-300 hover:scale-105 ${colors.button}`}
+            >
+              <Settings size={18} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -147,41 +168,93 @@ const UserSection = ({ userName, userType, onSettingsClick }) => {
 const Sidebar = ({ 
   isCollapsed, 
   chatHistory, 
-  onNewChat, 
-  onSearchChats, 
-  onPolicyLibrary, 
-  onHistory,
+  onNewChat,
+  onSearchChats,
+  onPolicyLibrary,
+  onHistory, 
   onChatSelect,
-  onSettingsClick 
+  onSettingsClick,
+  onToggleSidebar,
+  sidebarCollapsed
 }) => {
   const { colors, isDark } = useTheme();
   
   return (
-    <div className={`${isCollapsed ? 'w-0' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} border-r ${colors.border} flex flex-col`}>
-      <div className={`${isCollapsed ? 'hidden' : 'block'} flex-1 flex flex-col`}>
-        {/* Sidebar Header */}
-        <div className={`p-3 border-b ${colors.border}`}>
-          <SidebarButton icon={Plus} onClick={onNewChat} className="font-medium">
-            New chat
-          </SidebarButton>
-        </div>
-
-        {/* Sidebar Menu */}
-        <div className="flex-1 px-3 py-4 space-y-2">
-          <SidebarButton icon={Search} onClick={onSearchChats}>
-            Search chats
-          </SidebarButton>
+    <div className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} flex flex-col group`}>
+      {/* College Logo and Collapse Button */}
+      <div className="p-3">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className="relative">
+            <button
+              onClick={onToggleSidebar}
+              className={`${isCollapsed ? `p-3 rounded-2xl ${colors.bg}` : 'p-2.5 rounded-xl'} transition-all duration-300 ${isCollapsed ? '' : colors.bgTertiary} flex items-center justify-center hover:${colors.bgHover}`}
+            >
+              <GraduationCap size={20} className={colors.textSecondary} />
+            </button>
+            
+            {/* Hover collapse icon for collapsed state */}
+            {isCollapsed && (
+              <button
+                onClick={onToggleSidebar}
+                className={`absolute inset-0 p-3 rounded-2xl ${colors.bg} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:${colors.bgHover}`}
+              >
+                <PanelLeftClose size={16} className={colors.textSecondary} />
+              </button>
+            )}
+          </div>
           
-          <SidebarButton icon={BookOpen} onClick={onPolicyLibrary}>
-            Policy Library
-          </SidebarButton>
-
-          <SidebarButton icon={History} onClick={onHistory}>
-            History
-          </SidebarButton>
+          {!isCollapsed && (
+            <button
+              onClick={onToggleSidebar}
+              className={`p-2.5 rounded-xl transition-colors hover:${colors.bgHover}`}
+            >
+              <PanelLeftClose size={18} className={colors.textSecondary} />
+            </button>
+          )}
         </div>
+        
+        {/* Line below - always show but style differently */}
+        <div className={`mt-4 ${isCollapsed ? `border-b ${colors.border} opacity-50` : `border-b ${colors.border} opacity-30`}`}></div>
+      </div>
 
-        {/* Chat History */}
+      {/* Sidebar Menu */}
+      <div className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} py-2 space-y-3`}>
+        <SidebarButton 
+          icon={Plus} 
+          onClick={onNewChat} 
+          className="font-medium"
+          isCollapsed={isCollapsed}
+        >
+          {!isCollapsed && "New chat"}
+        </SidebarButton>
+        
+        <SidebarButton 
+          icon={Search} 
+          onClick={onSearchChats}
+          isCollapsed={isCollapsed}
+        >
+          {!isCollapsed && "Search chats"}
+        </SidebarButton>
+        
+        <SidebarButton 
+          icon={BookOpen} 
+          onClick={onPolicyLibrary}
+          isCollapsed={isCollapsed}
+        >
+          {!isCollapsed && "Policy Library"}
+        </SidebarButton>
+
+        <SidebarButton 
+          icon={History} 
+          onClick={onHistory}
+          isCollapsed={isCollapsed}
+        >
+          {!isCollapsed && "History"}
+        </SidebarButton>
+      </div>
+
+      {/* Chat History - Only show when expanded */}
+      {!isCollapsed && (
         <div className={`flex-1 px-3 space-y-1 overflow-y-auto scrollbar-custom ${isDark ? 'scrollbar-dark' : 'scrollbar-light'}`}>
           <h3 className={`text-xs font-medium ${colors.textMuted} uppercase tracking-wide mb-2`}>
             Recent Chats
@@ -194,14 +267,18 @@ const Sidebar = ({
             />
           ))}
         </div>
+      )}
 
-        {/* User Section */}
-        <UserSection
-          userName="Student Portal"
-          userType="Free Access"
-          onSettingsClick={onSettingsClick}
-        />
-      </div>
+      {/* Line above user section */}
+      <div className={`mt-4 mx-3 ${isCollapsed ? `border-t ${colors.border} opacity-50` : `border-t ${colors.border} opacity-30`}`}></div>
+
+      {/* User Section */}
+      <UserSection
+        userName="Student Portal"
+        userType="Free Access"
+        onSettingsClick={onSettingsClick}
+        isCollapsed={isCollapsed}
+      />
     </div>
   );
 };
@@ -214,7 +291,7 @@ const SchoolSelector = ({ selectedSchool, schools, isOpen, onToggle, onSelect })
     <div className="relative">
       <button
         onClick={onToggle}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${colors.button}`}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${colors.bgTertiary} hover:${colors.bgHover}`}
       >
         <BookOpen size={18} />
         <span className="text-sm font-medium">{selectedSchool}</span>
@@ -241,41 +318,37 @@ const SchoolSelector = ({ selectedSchool, schools, isOpen, onToggle, onSelect })
 };
 
 const Header = ({ 
-  sidebarCollapsed, 
-  onToggleSidebar, 
   selectedSchool, 
   schools, 
   schoolDropdownOpen, 
   onToggleSchoolDropdown, 
-  onSelectSchool 
+  onSelectSchool
 }) => {
   const { colors } = useTheme();
   
   return (
-    <div className={`h-14 border-b ${colors.border} flex items-center px-4 justify-between`}>
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onToggleSidebar}
-          className={`p-2 rounded-lg transition-colors hover:${colors.bgHover}`}
-        >
-          {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
-        
-        <SchoolSelector
-          selectedSchool={selectedSchool}
-          schools={schools}
-          isOpen={schoolDropdownOpen}
-          onToggle={onToggleSchoolDropdown}
-          onSelect={onSelectSchool}
-        />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <div className={`text-sm ${colors.textSecondary}`}>
-          College Assistant
+    <div className="p-3">
+      <div className="flex items-center justify-between min-h-[40px]">
+        <div className="flex items-center gap-4 ml-3">
+          <SchoolSelector
+            selectedSchool={selectedSchool}
+            schools={schools}
+            isOpen={schoolDropdownOpen}
+            onToggle={onToggleSchoolDropdown}
+            onSelect={onSelectSchool}
+          />
         </div>
-        <ThemeToggle />
+
+        <div className="flex items-center gap-3">
+          <div className={`text-sm ${colors.textSecondary}`}>
+            College Assistant
+          </div>
+          <ThemeToggle />
+        </div>
       </div>
+      
+      {/* Line below - matches sidebar line styling exactly */}
+      <div className={`mt-4 border-b ${colors.border} opacity-30`}></div>
     </div>
   );
 };
@@ -283,17 +356,41 @@ const Header = ({
 // Chat Components
 const MessageBubble = ({ message, isUser }) => {
   const { colors } = useTheme();
+  const [isCopied, setIsCopied] = useState(false);
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.text);
+      setIsCopied(true);
+      // Reset after 2 seconds
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
   
   return (
     <div className={`flex gap-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className={`w-8 h-8 ${colors.accent} rounded-full flex items-center justify-center flex-shrink-0`}>
-          <BookOpen size={16} className="text-white" />
+        <div className={`w-8 h-8 ${colors.botIcon} rounded-full flex items-center justify-center flex-shrink-0`}>
+          <BookOpen size={16} className={colors.botIconText} />
         </div>
       )}
-      <div className={`max-w-3xl ${isUser ? colors.userBubble : colors.botBubble} rounded-2xl px-4 py-3`}>
-        <p className={`text-sm whitespace-pre-wrap ${isUser ? 'text-white' : ''}`}>{message.text}</p>
-        <p className={`text-xs ${isUser ? 'text-zinc-200' : colors.textMuted} mt-1`}>{message.timestamp}</p>
+      <div className="flex flex-col max-w-2xl">
+        <div className={`${isUser ? colors.userBubble : colors.botBubble} rounded-2xl px-4 py-3`}>
+          <p className={`text-sm whitespace-pre-wrap ${isUser ? colors.userBubbleText : colors.text}`}>{message.text}</p>
+        </div>
+        {!isUser && (
+          <button
+            onClick={handleCopy}
+            className={`self-end mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all duration-200 hover:brightness-125 ${isCopied ? 'text-green-500' : colors.textMuted}`}
+          >
+            {isCopied ? <Check size={12} /> : <Copy size={12} />}
+            {isCopied ? 'Copied!' : 'Copy'}
+          </button>
+        )}
       </div>
       {isUser && (
         <div className={`w-8 h-8 ${colors.userBubble} rounded-full flex items-center justify-center flex-shrink-0`}>
@@ -309,8 +406,8 @@ const TypingIndicator = () => {
   
   return (
     <div className="flex gap-4 justify-start">
-      <div className={`w-8 h-8 ${colors.accent} rounded-full flex items-center justify-center flex-shrink-0`}>
-        <BookOpen size={16} className="text-white" />
+      <div className={`w-8 h-8 ${colors.botIcon} rounded-full flex items-center justify-center flex-shrink-0`}>
+        <BookOpen size={16} className={colors.botIconText} />
       </div>
       <div className={`${colors.botBubble} rounded-2xl px-4 py-3`}>
         <div className="flex gap-1">
@@ -329,7 +426,7 @@ const SuggestionCard = ({ suggestion, onClick }) => {
   return (
     <button
       onClick={() => onClick(suggestion)}
-      className={`p-3 rounded-lg text-sm text-left transition-colors ${colors.button}`}
+      className={`p-3 rounded-lg text-sm text-left transition-colors ${colors.suggestionCard}`}
     >
       {suggestion}
     </button>
@@ -338,32 +435,32 @@ const SuggestionCard = ({ suggestion, onClick }) => {
 
 const WelcomeScreen = ({ selectedSchool, onSuggestionClick }) => {
   const { colors } = useTheme();
-  const suggestions = [
-    'What are the graduation requirements?',
-    'How do I register for courses?',
-    'What\'s the academic calendar?',
-    'Financial aid application process'
-  ];
+  const suggestions = [];
 
   return (
-    <div className="h-full flex flex-col items-center justify-center px-4">
-      <div className="text-center max-w-md">
-        <BookOpen size={48} className={`mx-auto mb-6 ${colors.textMuted}`} />
-        <h2 className={`text-3xl font-semibold mb-4 ${colors.text}`}>How can I help with college policies?</h2>
-        <p className={`${colors.textSecondary} mb-8`}>
-          Ask me about academic policies, procedures, requirements, or any college-related questions for {selectedSchool}.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
-          {suggestions.map((suggestion, index) => (
-            <SuggestionCard
-              key={index}
-              suggestion={suggestion}
-              onClick={onSuggestionClick}
-            />
-          ))}
+    <div className="h-full flex flex-col px-4 pt-16">
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="text-center max-w-md mb-8">
+          <BookOpen size={48} className={`mx-auto mb-6 ${colors.textMuted}`} />
+          <h2 className={`text-3xl font-semibold mb-4 ${colors.text}`}>How can I help you?</h2>
+          <p className={`${colors.textSecondary} mb-8`}>
+            Ask me about academic policies, procedures, requirements, or any college-related questions for {selectedSchool}.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+            {suggestions.map((suggestion, index) => (
+              <SuggestionCard
+                key={index}
+                suggestion={suggestion}
+                onClick={onSuggestionClick}
+              />
+            ))}
+          </div>
         </div>
       </div>
+      
+      {/* Reduced space to bring input closer */}
+      <div className="h-4"></div>
     </div>
   );
 };
@@ -379,16 +476,18 @@ const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick }) => 
         onSuggestionClick={onSuggestionClick}
       />
     ) : (
-      <div className="px-4 py-6 space-y-6">
-        {messages.map((msg) => (
-          <MessageBubble
-            key={msg.id}
-            message={msg}
-            isUser={msg.sender === 'user'}
-          />
-        ))}
-        
-        {isTyping && <TypingIndicator />}
+      <div className="px-4 py-6">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              isUser={msg.sender === 'user'}
+            />
+          ))}
+          
+          {isTyping && <TypingIndicator />}
+        </div>
       </div>
     )}
     </div>
@@ -405,21 +504,52 @@ const MessageInput = ({
   onSend, 
   textareaRef,
   disabled = false,
-  onVoiceMode
+  onVoiceMode,
+  onSimpleVoiceMode,
+  isWelcomeScreen = false
 }) => {
-  const { colors, isDark } = useTheme(); // <- Added isDark here
+  const { colors, isDark } = useTheme();
+  const [hasExpanded, setHasExpanded] = useState(false);
+
+  const handleFirstInteraction = () => {
+    if (!hasExpanded && isWelcomeScreen) {
+      setHasExpanded(true);
+    }
+  };
 
   return (
-    <div className={`border-t ${colors.border} p-4`}>
-      <div className="max-w-3xl mx-auto">
+    <div className={`transition-all duration-500 ${
+      isWelcomeScreen && !hasExpanded 
+        ? 'p-4 pb-32' 
+        : 'p-4'
+    }`}
+    style={{
+      transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+    }}>
+      <div className={`mx-auto transition-all duration-500 ${
+        isWelcomeScreen && !hasExpanded 
+          ? 'max-w-md' 
+          : 'max-w-3xl'
+      }`}
+      style={{
+        transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }}>
         <div
-          className={`flex items-center gap-3 ${colors.bgInput} ${colors.border} border rounded-2xl px-4 py-2`}
+          className={`flex items-center gap-3 ${colors.bgInput} ${colors.border} border rounded-3xl px-4 py-2 transition-all duration-500`}
+          style={{
+            transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}
         >
           <textarea
             ref={textareaRef}
             value={message}
-            onChange={onChange}
+            onChange={(e) => {
+              onChange(e);
+              handleFirstInteraction();
+            }}
             onKeyPress={onKeyPress}
+            onFocus={handleFirstInteraction}
+            onClick={handleFirstInteraction}
             placeholder="Ask about college policies..."
             className={`
               flex-1 
@@ -440,22 +570,29 @@ const MessageInput = ({
           <div className="flex gap-2">
             <button
               className={`p-2 rounded-lg transition-colors hover:${colors.bgHover}`}
-              onClick={() => onVoiceMode(true)}
+              onClick={() => console.log('Microphone clicked')}
             >
               <Mic size={18} className={colors.textMuted.replace('text-', 'text-')} />
             </button>
 
             <button
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:${colors.bgHover}`}
+              onClick={() => onSimpleVoiceMode(true)}
+            >
+              <Radio size={18} className={colors.textMuted.replace('text-', 'text-')} />
+            </button>
+
+            <button
               onClick={onSend}
               disabled={!message.trim() || disabled}
-              className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${colors.buttonPrimary}`}
+              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:${colors.buttonPrimary}`}
             >
-              <Send size={18} className="text-white" />
+              <Send size={18} className={colors.textSecondary} />
             </button>
           </div>
         </div>
 
-        <p className={`text-xs ${colors.textMuted} text-center mt-2`}>
+        <p className={`text-xs ${colors.textMuted} text-center mt-6`}>
           College Assistant can make mistakes. Verify important information with official college resources.
         </p>
       </div>
@@ -463,7 +600,7 @@ const MessageInput = ({
   );
 };
 
-const VoiceModeOverlay = ({ onSend, onCancel }) => {
+const VoiceModeOverlay = ({ onSend, onCancel, simpleMode = false }) => {
   const { colors } = useTheme();
   const [isListening, setIsListening] = useState(false);
   const [voiceText, setVoiceText] = useState('');
@@ -503,18 +640,29 @@ const VoiceModeOverlay = ({ onSend, onCancel }) => {
         <p className={`${colors.text} text-center`}>Speak now...</p>
         <p className={`${colors.textMuted} text-sm`}>{voiceText}</p>
         <div className="flex gap-4">
-          <button
-            className={`px-4 py-2 rounded-lg ${colors.buttonPrimary}`}
-            onClick={() => { onSend(voiceText); setVoiceText(''); }}
-          >
-            Send
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg ${colors.button}`}
-            onClick={onCancel}
-          >
-            Cancel
-          </button>
+          {simpleMode ? (
+            <button
+              className={`px-6 py-3 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors`}
+              onClick={onCancel}
+            >
+              Hang Up
+            </button>
+          ) : (
+            <>
+              <button
+                className={`px-4 py-2 rounded-lg ${colors.buttonPrimary}`}
+                onClick={() => { onSend(voiceText); setVoiceText(''); }}
+              >
+                Send
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg ${colors.button}`}
+                onClick={onCancel}
+              >
+                Cancel
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -531,6 +679,7 @@ const CollegeChatGPT = () => {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
+  const [simpleVoiceMode, setSimpleVoiceMode] = useState(false);
   const textareaRef = useRef(null);
 
   const schools = [
@@ -627,13 +776,13 @@ const CollegeChatGPT = () => {
       <Sidebar
         isCollapsed={sidebarCollapsed}
         chatHistory={chatHistory}
+        onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+        sidebarCollapsed={sidebarCollapsed}
         {...sidebarHandlers}
       />
 
       <div className="flex-1 flex flex-col">
         <Header
-          sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           selectedSchool={selectedSchool}
           schools={schools}
           schoolDropdownOpen={schoolDropdownOpen}
@@ -648,6 +797,14 @@ const CollegeChatGPT = () => {
               setVoiceMode(false);
             }}
             onCancel={() => setVoiceMode(false)}
+          />
+        )}
+
+        {simpleVoiceMode && (
+          <VoiceModeOverlay
+            onSend={() => {}} // No send functionality in simple mode
+            onCancel={() => setSimpleVoiceMode(false)}
+            simpleMode={true}
           />
         )}
 
@@ -666,7 +823,16 @@ const CollegeChatGPT = () => {
           textareaRef={textareaRef}
           disabled={isTyping}
           onVoiceMode={setVoiceMode}
+          onSimpleVoiceMode={setSimpleVoiceMode}
+          isWelcomeScreen={messages.length === 0}
         />
+        
+        {/* Sticky Footer */}
+        <div className="fixed bottom-0 left-0 right-0 bg-transparent pointer-events-none">
+          <p className={`text-xs ${colors.textMuted} text-center py-3 px-4`}>
+            College Assistant can make mistakes. Verify important information with official college resources.
+          </p>
+        </div>
       </div>
     </div>
   );
