@@ -350,6 +350,134 @@ const Header = ({
   );
 };
 
+// Helper function to parse bold text within content
+const parseBoldText = (text) => {
+  if (!text.includes('**')) return text;
+  
+  const parts = text.split(/(\*\*.*?\*\*)/);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} className="font-semibold text-gray-800 dark:text-gray-200">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
+
+// Text formatting function for bot responses
+const formatBotResponse = (text) => {
+  if (!text) return '';
+  
+  // Split text into lines
+  let lines = text.split('\n');
+  let formattedContent = [];
+  
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim();
+    
+    // Skip empty lines but add spacing
+    if (!trimmedLine) {
+      if (index < lines.length - 1 && lines[index + 1]?.trim()) {
+        formattedContent.push(<div key={`space-${index}`} className="h-3" />);
+      }
+      return;
+    }
+    
+    // Handle main headers (# Header)
+    if (/^#\s/.test(trimmedLine)) {
+      const content = trimmedLine.replace(/^#\s/, '');
+      formattedContent.push(
+        <div key={index} className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">
+          {content}
+        </div>
+      );
+    }
+    // Handle secondary headers (## Header)
+    else if (/^##\s/.test(trimmedLine)) {
+      const content = trimmedLine.replace(/^##\s/, '');
+      formattedContent.push(
+        <div key={index} className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-5 mb-2">
+          {content}
+        </div>
+      );
+    }
+    // Handle tertiary headers (### Header)
+    else if (/^###\s/.test(trimmedLine)) {
+      const content = trimmedLine.replace(/^###\s/, '');
+      formattedContent.push(
+        <div key={index} className="text-base font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-2">
+          {content}
+        </div>
+      );
+    }
+    // Handle numbered section headers (1.1, 1.2, 2.1, etc.)
+    else if (/^\d+\.\d+\s/.test(trimmedLine)) {
+      const content = trimmedLine;
+      formattedContent.push(
+        <div key={index} className="font-semibold text-blue-700 dark:text-blue-300 mt-3 mb-2">
+          {content}
+        </div>
+      );
+    }
+    // Handle numbered lists (1. 2. 3. etc.) - but not section numbers
+    else if (/^\d+\.\s/.test(trimmedLine) && !/^\d+\.\d+/.test(trimmedLine)) {
+      const content = trimmedLine.replace(/^\d+\.\s/, '');
+      const number = trimmedLine.match(/^(\d+)\./)[1];
+      formattedContent.push(
+        <div key={index} className="my-2 flex items-start">
+          <span className="font-semibold text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 min-w-[20px]">{number}.</span>
+          <span className="leading-relaxed">{parseBoldText(content)}</span>
+        </div>
+      );
+    }
+    // Handle sub-bullet points (  - or   •) - indented
+    else if (/^\s{2,}[-•]\s/.test(trimmedLine)) {
+      const content = trimmedLine.replace(/^\s*[-•]\s/, '');
+      formattedContent.push(
+        <div key={index} className="my-1 ml-6 flex items-start">
+          <span className="text-gray-500 dark:text-gray-500 mr-2 flex-shrink-0">◦</span>
+          <span className="leading-relaxed">{parseBoldText(content)}</span>
+        </div>
+      );
+    }
+    // Handle bullet points (- or •)
+    else if (/^[-•]\s/.test(trimmedLine)) {
+      const content = trimmedLine.replace(/^[-•]\s/, '');
+      formattedContent.push(
+        <div key={index} className="my-1 ml-4 flex items-start">
+          <span className="text-gray-600 dark:text-gray-400 mr-2 flex-shrink-0">•</span>
+          <span className="leading-relaxed">{parseBoldText(content)}</span>
+        </div>
+      );
+    }
+    // Handle headers/bold text (text ending with :) - but not URLs
+    else if (trimmedLine.endsWith(':') && !trimmedLine.includes('http') && !trimmedLine.includes('.') && trimmedLine.length < 60) {
+      formattedContent.push(
+        <div key={index} className="font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-2">
+          {parseBoldText(trimmedLine)}
+        </div>
+      );
+    }
+    // Handle **bold** text (standalone line with bold formatting)
+    else if (trimmedLine.includes('**')) {
+      formattedContent.push(
+        <div key={index} className="my-1 leading-relaxed text-gray-700 dark:text-gray-300">
+          {parseBoldText(trimmedLine)}
+        </div>
+      );
+    }
+    // Regular paragraph text
+    else {
+      formattedContent.push(
+        <div key={index} className="my-1 leading-relaxed text-gray-700 dark:text-gray-300">
+          {parseBoldText(trimmedLine)}
+        </div>
+      );
+    }
+  });
+  
+  return <div className="space-y-2">{formattedContent}</div>;
+};
+
 // Chat Components
 const MessageBubble = ({ message, isUser }) => {
   const { colors } = useTheme();
@@ -376,8 +504,47 @@ const MessageBubble = ({ message, isUser }) => {
         </div>
       )}
       <div className="flex flex-col max-w-2xl">
-        <div className={`${isUser ? colors.userBubble : colors.botBubble} rounded-2xl px-4 py-3`}>
-          <p className={`text-sm whitespace-pre-wrap ${isUser ? colors.userBubbleText : colors.text}`}>{message.text}</p>
+        <div className={`${
+          isUser 
+            ? colors.userBubble 
+            : message.isError 
+              ? 'bg-red-100 border border-red-300 dark:bg-red-900/20 dark:border-red-700' 
+              : colors.botBubble
+        } rounded-2xl px-4 py-3`}>
+          {isUser ? (
+            <p className={`text-sm whitespace-pre-wrap ${colors.userBubbleText}`}>{message.text}</p>
+          ) : (
+            <div className={`text-sm ${
+              message.isError 
+                ? 'text-red-700 dark:text-red-300'
+                : colors.text
+            }`}>
+              {message.isError ? (
+                <p className="whitespace-pre-wrap">{message.text}</p>
+              ) : (
+                formatBotResponse(message.text)
+              )}
+            </div>
+          )}
+          
+          {/* Show API response time for successful responses */}
+          {!isUser && !message.isError && message.elapsed_seconds && (
+            <div className={`text-xs ${colors.textMuted} mt-2 opacity-60`}>
+              Response time: {message.elapsed_seconds}s
+            </div>
+          )}
+          
+          {/* Show sources if available */}
+          {!isUser && message.sources && message.sources.length > 0 && (
+            <div className={`mt-3 pt-2 border-t ${colors.border} opacity-75`}>
+              <div className={`text-xs ${colors.textMuted} mb-1`}>Sources:</div>
+              {message.sources.slice(0, 2).map((source, index) => (
+                <div key={index} className={`text-xs ${colors.textMuted} truncate`}>
+                  • {source.source || 'Document'}: {source.snippet?.substring(0, 50)}...
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         {!isUser && (
           <button
@@ -462,11 +629,11 @@ const WelcomeScreen = ({ selectedSchool, onSuggestionClick }) => {
   );
 };
 
-const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick }) => {
+const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick, scrollRef }) => {
   const { isDark } = useTheme();
   
   return (
-    <div className={`flex-1 overflow-y-auto scrollbar-custom ${isDark ? 'scrollbar-dark' : 'scrollbar-light'}`}>
+    <div ref={scrollRef} className={`flex-1 overflow-y-auto scrollbar-custom ${isDark ? 'scrollbar-dark' : 'scrollbar-light'}`}>
       {messages.length === 0 ? (
       <WelcomeScreen 
         selectedSchool={selectedSchool} 
@@ -665,7 +832,7 @@ const VoiceModeOverlay = ({ onSend, onCancel, simpleMode = false }) => {
 
 // Main Component
 const CollegeChatGPT = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [selectedSchool, setSelectedSchool] = useState('Computer Science Department');
   const [schoolDropdownOpen, setSchoolDropdownOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -674,6 +841,7 @@ const CollegeChatGPT = () => {
   const [voiceMode, setVoiceMode] = useState(false);
   const [simpleVoiceMode, setSimpleVoiceMode] = useState(false);
   const textareaRef = useRef(null);
+  const chatAreaRef = useRef(null);
 
   const schools = [
     'Computer Science Department',
@@ -712,17 +880,64 @@ const CollegeChatGPT = () => {
     setMessage('');
     setIsTyping(true);
     
-    // TODO: Replace with actual FastAPI call
-    setTimeout(() => {
+    try {
+      // Call the FastAPI backend
+      const response = await fetch('http://127.0.0.1:8000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: msgText,
+          department: selectedSchool,
+          k: 10 // Number of documents to retrieve
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
       const botResponse = {
         id: Date.now() + 1,
-        text: `I understand you're asking about "${msgText}" regarding ${selectedSchool}. I'll help you find the relevant college policies and information. This would typically connect to your FastAPI backend to fetch the appropriate response based on the selected department.`,
+        text: data.response,
         sender: 'bot',
-        timestamp: new Date().toLocaleTimeString()
+        timestamp: new Date().toLocaleTimeString(),
+        sources: data.sources || [], // Include sources if available
+        elapsed_seconds: data.elapsed_seconds
       };
+      
       setMessages(prev => [...prev, botResponse]);
-      setIsTyping(false);
-    }, 1500);
+      
+    } catch (error) {
+      console.error('API Error:', error);
+      
+      // Fallback error response
+      const errorResponse = {
+        id: Date.now() + 1,
+        text: `Sorry, I'm having trouble connecting to the server. Please make sure the backend is running at http://127.0.0.1:8000 and try again.
+
+Error details: ${error.message}
+
+You can start the backend by running "python app.py" in the Backend folder.`,
+        sender: 'bot',
+        timestamp: new Date().toLocaleTimeString(),
+        isError: true
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    }
+    
+    setIsTyping(false);
+    
+    // Refocus the input after sending message
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleKeyPress = (e) => {
@@ -748,6 +963,23 @@ const CollegeChatGPT = () => {
       textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
     }
   }, [message]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTo({
+        top: chatAreaRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [messages, isTyping]);
+
+  // Focus input on component mount
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
 
   // Sidebar handlers
   const sidebarHandlers = {
@@ -807,6 +1039,7 @@ const CollegeChatGPT = () => {
           isTyping={isTyping}
           selectedSchool={selectedSchool}
           onSuggestionClick={handleSuggestionClick}
+          scrollRef={chatAreaRef}
         />
 
         <MessageInput
