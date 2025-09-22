@@ -180,14 +180,14 @@ const Sidebar = ({
   const { colors, isDark } = useTheme();
   
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} flex flex-col group`}>
+    <div className={`fixed left-0 top-0 h-full ${isCollapsed ? 'z-50' : 'z-[60]'} ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} flex flex-col group`}>
       {/* College Logo and Collapse Button */}
       <div className="p-3">
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-start' : 'justify-between'}`}>
           <div className="relative">
             <button
               onClick={onToggleSidebar}
-              className={`${isCollapsed ? `p-3 rounded-2xl ${colors.bg}` : 'p-2.5 rounded-xl'} transition-all duration-300 ${isCollapsed ? '' : colors.bgTertiary} flex items-center justify-center hover:${colors.bgHover}`}
+              className={`${isCollapsed ? `p-3 rounded-xl` : 'p-2.5 rounded-xl'} transition-all duration-300 ${isCollapsed ? `hover:${colors.bgHover}` : colors.bgTertiary} flex items-center justify-center ${!isCollapsed ? `hover:${colors.bgHover}` : ''}`}
             >
               <GraduationCap size={20} className={colors.textSecondary} />
             </button>
@@ -196,7 +196,7 @@ const Sidebar = ({
             {isCollapsed && (
               <button
                 onClick={onToggleSidebar}
-                className={`absolute inset-0 p-3 rounded-2xl ${colors.bg} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:${colors.bgHover}`}
+                className={`absolute inset-0 p-3 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:${colors.bgHover}`}
               >
                 <PanelLeftClose size={16} className={colors.textSecondary} />
               </button>
@@ -322,14 +322,15 @@ const Header = ({
   schools, 
   schoolDropdownOpen, 
   onToggleSchoolDropdown, 
-  onSelectSchool
+  onSelectSchool,
+  sidebarCollapsed
 }) => {
   const { colors } = useTheme();
   
   return (
-    <div className="p-3">
+    <div className={`py-3 pr-6 ${sidebarCollapsed ? 'pl-[76px]' : 'pl-[280px]'}`}>
       <div className="flex items-center justify-between min-h-[40px]">
-        <div className="flex items-center gap-4 ml-3">
+        <div className="flex items-center gap-4">
           <SchoolSelector
             selectedSchool={selectedSchool}
             schools={schools}
@@ -346,9 +347,6 @@ const Header = ({
           <ThemeToggle />
         </div>
       </div>
-      
-      {/* Line below - matches sidebar line styling exactly */}
-      <div className={`mt-4 border-b ${colors.border} opacity-30`}></div>
     </div>
   );
 };
@@ -592,9 +590,6 @@ const MessageInput = ({
           </div>
         </div>
 
-        <p className={`text-xs ${colors.textMuted} text-center mt-6`}>
-          College Assistant can make mistakes. Verify important information with official college resources.
-        </p>
       </div>
     </div>
   );
@@ -772,7 +767,7 @@ const CollegeChatGPT = () => {
   const { colors } = useTheme();
 
   return (
-    <div className={`flex h-screen ${colors.bg} ${colors.text}`}>
+    <div className={`relative h-screen overflow-hidden ${colors.bg} ${colors.text}`}>
       <Sidebar
         isCollapsed={sidebarCollapsed}
         chatHistory={chatHistory}
@@ -781,13 +776,14 @@ const CollegeChatGPT = () => {
         {...sidebarHandlers}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="w-full h-full flex flex-col">
         <Header
           selectedSchool={selectedSchool}
           schools={schools}
           schoolDropdownOpen={schoolDropdownOpen}
           onToggleSchoolDropdown={() => setSchoolDropdownOpen(!schoolDropdownOpen)}
           onSelectSchool={handleSelectSchool}
+          sidebarCollapsed={sidebarCollapsed}
         />
 
         {voiceMode && (
@@ -827,8 +823,8 @@ const CollegeChatGPT = () => {
           isWelcomeScreen={messages.length === 0}
         />
         
-        {/* Sticky Footer */}
-        <div className="fixed bottom-0 left-0 right-0 bg-transparent pointer-events-none">
+        {/* Footer */}
+        <div className="bg-transparent pointer-events-none">
           <p className={`text-xs ${colors.textMuted} text-center py-3 px-4`}>
             College Assistant can make mistakes. Verify important information with official college resources.
           </p>
