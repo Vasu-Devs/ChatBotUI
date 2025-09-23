@@ -551,7 +551,7 @@ const WelcomeScreen = ({ selectedSchool, onSuggestionClick }) => {
     <div className="h-full flex flex-col px-4 pt-20 md:pt-16">
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="text-center max-w-2xl mb-8">
-          <BookOpen size={48} className={`mx-auto mb-6 ${colors.textMuted}`} />
+          <GraduationCap size={48} className={`mx-auto mb-6 ${colors.textMuted}`} />
           <h2 className={`text-3xl font-semibold mb-4 ${colors.text}`}>How can I help you?</h2>
           <p className={`${colors.textSecondary} mb-8`}>
             Ask me about academic policies, procedures, requirements, or any college-related questions for {selectedSchool}.
