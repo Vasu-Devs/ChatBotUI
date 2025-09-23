@@ -4,97 +4,27 @@ import {
   Search, 
   History, 
   ChevronDown, 
-  Menu, 
-  X, 
   Send, 
   Mic,
   Plus,
   BookOpen,
   User,
   Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
   Sun,
   Moon,
-  Waves,
   Radio,
   GraduationCap,
   PanelLeftClose,
   Copy,
-  Check
+  Check,
+  ArrowLeft,
+  Menu,
+  X
 } from 'lucide-react';
+import { useTheme } from './hooks/useTheme.js';
+// Simplified App.jsx - Chat only
 
-// Theme Context
-const ThemeContext = React.createContext();
 
-const useTheme = () => {
-  const context = React.useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
-  }
-  return context;
-};
-
-const ThemeProvider = ({ children }) => {
-  const [isDark, setIsDark] = useState(true);
-  
-  const toggleTheme = () => setIsDark(!isDark);
-  
-  const theme = {
-    isDark,
-    toggleTheme,
-    colors: isDark ? {
-      // Dark mode - Lighter main background, darker sidebar with blended buttons
-      bg: 'bg-neutral-800',
-      bgSecondary: 'bg-neutral-900',
-      bgTertiary: 'bg-neutral-700',
-      bgHover: 'bg-neutral-700',
-      bgInput: 'bg-neutral-800',
-      border: 'border-neutral-600',
-      text: 'text-neutral-200',
-      textSecondary: 'text-neutral-300',
-      textMuted: 'text-neutral-400',
-      userBubble: 'bg-neutral-700',
-      userBubbleText: 'text-white',
-      userBubbleTextMuted: 'text-neutral-200',
-      botBubble: 'bg-neutral-700',
-      botIcon: 'bg-neutral-700',
-      botIconText: 'text-white',
-      button: 'bg-neutral-800 hover:bg-neutral-700',
-      buttonPrimary: 'bg-neutral-700 hover:bg-neutral-600',
-      suggestionCard: 'bg-neutral-700 hover:bg-neutral-600',
-      accent: 'bg-neutral-700'
-    } : {
-      // Light mode - Clean neutral theme, no colors
-      bg: 'bg-white',
-      bgSecondary: 'bg-neutral-100',
-      bgTertiary: 'bg-neutral-50',
-      bgHover: 'bg-neutral-100',
-      bgInput: 'bg-white',
-      border: 'border-neutral-200',
-      text: 'text-neutral-700',
-      textSecondary: 'text-neutral-600',
-      textMuted: 'text-neutral-500',
-      userBubble: 'bg-neutral-200',
-      userBubbleText: 'text-neutral-800',
-      userBubbleTextMuted: 'text-neutral-600',
-      botBubble: 'bg-neutral-100',
-      botIcon: 'bg-neutral-300',
-      botIconText: 'text-neutral-600',
-      button: 'bg-neutral-50 hover:bg-neutral-100',
-      buttonPrimary: 'bg-neutral-600 hover:bg-neutral-700',
-      suggestionCard: 'bg-neutral-50 hover:bg-neutral-100',
-      accent: 'bg-neutral-600'
-    }
-  };
-  
-  return (
-    <ThemeContext.Provider value={theme}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
 
 // Theme Toggle Component
 const ThemeToggle = () => {
@@ -112,7 +42,7 @@ const ThemeToggle = () => {
 };
 
 // Sidebar Components
-const SidebarButton = ({ icon: Icon, children, onClick, className = "", isCollapsed = false }) => {
+const SidebarButton = ({ icon: IconComponent, children, onClick, className = "", isCollapsed = false }) => {
   const { colors, isDark } = useTheme();
   return (
     <button 
@@ -120,7 +50,7 @@ const SidebarButton = ({ icon: Icon, children, onClick, className = "", isCollap
       className={`w-full flex items-center ${isCollapsed ? 'justify-center px-3 py-3 rounded-2xl' : 'gap-4 px-4 py-3 rounded-2xl'} transition-all duration-300 ${isDark && !isCollapsed ? 'bg-neutral-800' : ''} hover:${colors.bgHover} hover:scale-105 ${colors.textSecondary} ${className}`}
       title={isCollapsed ? children : undefined}
     >
-      <Icon size={18} />
+      <IconComponent size={18} />
       {!isCollapsed && <span className="text-sm font-medium">{children}</span>}
     </button>
   );
@@ -179,7 +109,7 @@ const Sidebar = ({
   const { colors, isDark } = useTheme();
   
   return (
-    <div className={`fixed left-0 top-0 h-full ${isCollapsed ? 'z-50' : 'z-[60]'} ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} flex flex-col group`}>
+    <div className={`hidden md:flex fixed left-0 top-0 h-full ${isCollapsed ? 'z-50' : 'z-[60]'} ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ${colors.bgSecondary} flex-col group`}>
       {/* College Logo and Collapse Button */}
       <div className="p-3">
         <div className={`flex items-center ${isCollapsed ? 'justify-start' : 'justify-between'}`}>
@@ -213,7 +143,7 @@ const Sidebar = ({
         </div>
         
         {/* Line below - always show but style differently */}
-        <div className={`mt-4 ${isCollapsed ? `border-b ${colors.border} opacity-50` : `border-b ${colors.border} opacity-30`}`}></div>
+        <div className={`${isCollapsed ? 'mt-2' : 'mt-4'} ${isCollapsed ? `mx-0 border-b ${colors.border} opacity-50` : `border-b ${colors.border} opacity-30`}`}></div>
       </div>
 
       {/* Sidebar Menu */}
@@ -250,6 +180,8 @@ const Sidebar = ({
         >
           {!isCollapsed && "History"}
         </SidebarButton>
+
+
       </div>
 
       {/* Chat History - Only show when expanded */}
@@ -322,14 +254,28 @@ const Header = ({
   schoolDropdownOpen, 
   onToggleSchoolDropdown, 
   onSelectSchool,
-  sidebarCollapsed
+  sidebarCollapsed,
+  onBackToHome
 }) => {
   const { colors } = useTheme();
   
   return (
-    <div className={`py-3 pr-6 ${sidebarCollapsed ? 'pl-[76px]' : 'pl-[280px]'}`}>
-      <div className="flex items-center justify-between min-h-[40px]">
-        <div className="flex items-center gap-4">
+    <div className={`hidden md:block py-3 pr-6 ${sidebarCollapsed ? 'pl-3' : 'pl-6 ml-48'} ${colors.bg} relative transition-all duration-300`}>
+      {/* Header shine overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] via-transparent to-transparent pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-l from-blue-500/[0.01] via-transparent to-transparent pointer-events-none"></div>
+      
+      <div className="flex items-center justify-between min-h-[40px] max-w-full relative z-10">
+        <div className="flex items-center gap-4 flex-shrink-0">
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className={`p-2 rounded-lg hover:${colors.bgHover} transition-colors flex items-center justify-center`}
+              title="Back to Home"
+            >
+              <ArrowLeft size={18} className={colors.textSecondary} />
+            </button>
+          )}
           <SchoolSelector
             selectedSchool={selectedSchool}
             schools={schools}
@@ -339,7 +285,7 @@ const Header = ({
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0 mr-12">
           <div className={`text-sm ${colors.textSecondary}`}>
             College Assistant
           </div>
@@ -602,7 +548,7 @@ const WelcomeScreen = ({ selectedSchool, onSuggestionClick }) => {
   const suggestions = [];
 
   return (
-    <div className="h-full flex flex-col px-4 pt-16">
+    <div className="h-full flex flex-col px-4 pt-20 md:pt-16">
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="text-center max-w-2xl mb-8">
           <BookOpen size={48} className={`mx-auto mb-6 ${colors.textMuted}`} />
@@ -640,7 +586,7 @@ const ChatArea = ({ messages, isTyping, selectedSchool, onSuggestionClick, scrol
         onSuggestionClick={onSuggestionClick}
       />
     ) : (
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 pt-20 md:pt-6">
         <div className="max-w-5xl mx-auto space-y-6">
           {messages.map((msg) => (
             <MessageBubble
@@ -830,8 +776,9 @@ const VoiceModeOverlay = ({ onSend, onCancel, simpleMode = false }) => {
 };
 
 
+
 // Main Component
-const CollegeChatGPT = () => {
+const CollegeChatGPT = ({ onBackToHome }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [selectedSchool, setSelectedSchool] = useState('Computer Science Department');
   const [schoolDropdownOpen, setSchoolDropdownOpen] = useState(false);
@@ -840,6 +787,8 @@ const CollegeChatGPT = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [simpleVoiceMode, setSimpleVoiceMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const textareaRef = useRef(null);
   const chatAreaRef = useRef(null);
 
@@ -981,6 +930,28 @@ You can start the backend by running "python app.py" in the Backend folder.`,
     }
   }, []);
 
+  // Close mobile menu on escape key
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen]);
+
   // Sidebar handlers
   const sidebarHandlers = {
     onNewChat: () => {
@@ -998,6 +969,193 @@ You can start the backend by running "python app.py" in the Backend folder.`,
 
   return (
     <div className={`relative h-screen overflow-hidden ${colors.bg} ${colors.text}`}>
+      {/* Mobile Top Navigation - visible only on mobile */}
+      <div className={`md:hidden ${colors.bgSecondary} border-b ${colors.border} fixed top-0 left-0 right-0 z-50 shadow-sm`}>
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Left: Hamburger Menu */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`p-2 rounded-lg hover:${colors.bgHover} transition-colors active:scale-95`}
+          >
+            <Menu size={24} className={colors.textSecondary} />
+          </button>
+
+          {/* Center: Brand */}
+          <div className="flex items-center gap-3">
+            <GraduationCap size={22} className={colors.textSecondary} />
+            <span className={`font-bold text-base ${colors.text}`}>College Assistant</span>
+          </div>
+
+          {/* Right: Theme Toggle */}
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Mobile Hamburger Menu Overlay */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          
+          {/* Slide-out Menu */}
+          <div className={`md:hidden fixed top-0 left-0 h-full w-80 max-w-[85vw] ${colors.bgSecondary} border-r ${colors.border} z-50 transform transition-all duration-300 ease-in-out shadow-2xl flex flex-col`}>
+            {/* Menu Header - Fixed */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <GraduationCap size={22} className={colors.textSecondary} />
+                <span className={`font-bold text-base ${colors.text}`}>Chat Menu</span>
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className={`p-1 rounded-lg hover:${colors.bgHover} transition-colors`}
+              >
+                <X size={20} className={colors.textSecondary} />
+              </button>
+            </div>
+
+            {/* Menu Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto scrollbar-custom dark:scrollbar-dark light:scrollbar-light">
+              {/* Navigation Items */}
+              <div className="px-4 py-4 space-y-2 pb-6">
+                {onBackToHome && (
+                  <button
+                    onClick={() => {
+                      onBackToHome();
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                  >
+                    <ArrowLeft size={20} className={colors.textSecondary} />
+                    <span className={`font-medium ${colors.text}`}>Back to Home</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    sidebarHandlers.onNewChat();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                >
+                  <Plus size={20} className={colors.textSecondary} />
+                  <span className={`font-medium ${colors.text}`}>New Chat</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sidebarHandlers.onSearchChats();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                >
+                  <Search size={20} className={colors.textSecondary} />
+                  <span className={`font-medium ${colors.text}`}>Search Chats</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sidebarHandlers.onPolicyLibrary();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                >
+                  <BookOpen size={20} className={colors.textSecondary} />
+                  <span className={`font-medium ${colors.text}`}>Policy Library</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sidebarHandlers.onHistory();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                >
+                  <History size={20} className={colors.textSecondary} />
+                  <span className={`font-medium ${colors.text}`}>History</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sidebarHandlers.onSettingsClick();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                >
+                  <Settings size={20} className={colors.textSecondary} />
+                  <span className={`font-medium ${colors.text}`}>Settings</span>
+                </button>
+
+                {/* School Selector for Mobile */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className={`px-4 py-2 text-xs font-medium ${colors.textMuted} uppercase tracking-wide`}>
+                    Department
+                  </div>
+                  <button
+                    onClick={() => setSchoolDropdownOpen(!schoolDropdownOpen)}
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl hover:${colors.bgHover} transition-colors text-left`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <BookOpen size={20} className={colors.textSecondary} />
+                      <span className={`font-medium ${colors.text} text-sm`}>{selectedSchool}</span>
+                    </div>
+                    <ChevronDown size={16} className={`transition-transform ${schoolDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {schoolDropdownOpen && (
+                    <div className="px-4 py-2 space-y-1">
+                      {schools.map((school) => (
+                        <button
+                          key={school}
+                          onClick={() => {
+                            handleSelectSchool(school);
+                            setSchoolDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg hover:${colors.bgHover} transition-colors text-sm ${colors.textSecondary}`}
+                        >
+                          {school}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Recent Chats for Mobile */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className={`px-4 py-2 text-xs font-medium ${colors.textMuted} uppercase tracking-wide`}>
+                    Recent Chats
+                  </div>
+                  <div className="space-y-1">
+                    {chatHistory.slice(0, 5).map((chat, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          sidebarHandlers.onChatSelect(chat);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 rounded-lg hover:${colors.bgHover} transition-colors text-sm ${colors.textSecondary} truncate`}
+                      >
+                        {chat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Footer - Fixed at bottom */}
+            <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <div className={`text-xs ${colors.textMuted} text-center`}>
+                College Assistant v1.0
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Desktop Sidebar - hidden on mobile */}
       <Sidebar
         isCollapsed={sidebarCollapsed}
         chatHistory={chatHistory}
@@ -1006,7 +1164,8 @@ You can start the backend by running "python app.py" in the Backend folder.`,
         {...sidebarHandlers}
       />
 
-      <div className="w-full h-full flex flex-col">
+      <div className={`w-full h-full flex flex-col md:ml-16 transition-all duration-300`}>
+        {/* Desktop Header - hidden on mobile */}
         <Header
           selectedSchool={selectedSchool}
           schools={schools}
@@ -1014,6 +1173,7 @@ You can start the backend by running "python app.py" in the Backend folder.`,
           onToggleSchoolDropdown={() => setSchoolDropdownOpen(!schoolDropdownOpen)}
           onSelectSchool={handleSelectSchool}
           sidebarCollapsed={sidebarCollapsed}
+          onBackToHome={onBackToHome}
         />
 
         {voiceMode && (
@@ -1065,11 +1225,9 @@ You can start the backend by running "python app.py" in the Backend folder.`,
   );
 };
 
-// Main App with Theme Provider
-const App = () => (
-  <ThemeProvider>
-    <CollegeChatGPT />
-  </ThemeProvider>
+// Main App Component
+const App = ({ onBackToHome }) => (
+  <CollegeChatGPT onBackToHome={onBackToHome} />
 );
 
 export default App;
