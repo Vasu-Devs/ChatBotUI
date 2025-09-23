@@ -1,6 +1,6 @@
 # College Assistant - Multi-Portal Platform
 
-A comprehensive college assistant platform with multiple interfaces built with React, Vite, and Tailwind CSS. This application features a modern landing page, ChatGPT-like chat interface, and a sophisticated admin dashboard for institutional document management.
+A comprehensive college assistant platform with multiple interfaces built with React, Vite, and Tailwind CSS. This application features a modern landing page, intelligent chat interface, and a sophisticated admin dashboard for institutional document management.
 
 ## 🌟 Platform Overview
 
@@ -12,7 +12,7 @@ A comprehensive college assistant platform with multiple interfaces built with R
 - **Consistent Branding**: Professional college assistant branding throughout
 
 ### 💬 Student Chat Interface
-- **ChatGPT-Style Design**: Modern conversational interface with message bubbles
+- **Modern Chat Design**: Conversational interface with intuitive message bubbles
 - **Department Integration**: Multi-department support with context-aware responses
 - **Real-time Interaction**: Instant messaging with typing indicators
 - **Chat History**: Persistent conversation tracking and management
@@ -111,7 +111,7 @@ Frontend/
 │   │   │   └── react.svg             # React logo
 │   │   ├── components/               # Reusable UI components
 │   │   │   ├── AppRouter.jsx         # Navigation routing logic
-│   │   │   ├── CollegeChatGPT.jsx    # Main chat interface
+│   │   │   ├── CollegeChatInterface.jsx # Main chat interface
 │   │   │   ├── FeatureCard.jsx       # Landing page feature cards
 │   │   │   ├── Header.jsx            # Chat interface header
 │   │   │   ├── MessageInput.jsx      # Chat input component
@@ -160,7 +160,7 @@ Frontend/
 - **Theme Integration**: Consistent styling across all landing page elements
 
 #### 💬 Chat Portal (`src/App.jsx`)
-- **`CollegeChatGPT.jsx`**: Complete chat interface with state management
+- **`CollegeChatInterface.jsx`**: Complete chat interface with state management
 - **`Header.jsx`**: Department selector and navigation controls
 - **`Sidebar.jsx`**: Collapsible navigation with chat history
 - **`MessageInput.jsx`**: Smart input with auto-resize and keyboard shortcuts
@@ -253,7 +253,7 @@ The platform is designed for seamless integration with backend services:
 
 #### Chat Interface (Mock Implementation)
 ```javascript
-// In CollegeChatGPT.jsx - handleSendMessage
+// In CollegeChatInterface.jsx - handleSendMessage
 // Currently uses mock responses with realistic delays
 const mockResponse = "This is a mock response for development.";
 ```

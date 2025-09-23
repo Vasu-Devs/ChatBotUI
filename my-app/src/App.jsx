@@ -778,7 +778,7 @@ const VoiceModeOverlay = ({ onSend, onCancel, simpleMode = false }) => {
 
 
 // Main Component
-const CollegeChatGPT = ({ onBackToHome }) => {
+const CollegeChatInterface = ({ onBackToHome }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [selectedSchool, setSelectedSchool] = useState('Computer Science Department');
   const [schoolDropdownOpen, setSchoolDropdownOpen] = useState(false);
@@ -1236,7 +1236,7 @@ You can start the backend by running "python app.py" in the Backend folder.`,
 
 // Main App Component
 const App = ({ onBackToHome }) => (
-  <CollegeChatGPT onBackToHome={onBackToHome} />
+  <CollegeChatInterface onBackToHome={onBackToHome} />
 );
 
 export default App;

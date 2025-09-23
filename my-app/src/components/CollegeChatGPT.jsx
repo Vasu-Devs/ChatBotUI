@@ -6,7 +6,7 @@ import ChatArea from "./ChatArea";
 import { MessageInput } from "./MessageInput";
 import VoiceModeOverlay from "./VoiceModeOverlay";
 
-const CollegeChatGPT = () => {
+const CollegeChatInterface = () => {
   const { colors } = useTheme();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -79,4 +79,4 @@ const CollegeChatGPT = () => {
   );
 };
 
-export default CollegeChatGPT;
+export default CollegeChatInterface;
