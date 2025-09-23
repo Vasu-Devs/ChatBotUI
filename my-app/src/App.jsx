@@ -965,10 +965,19 @@ You can start the backend by running "python app.py" in the Backend folder.`,
     onSettingsClick: () => console.log('Settings clicked')
   };
 
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
     <div className={`relative h-screen overflow-hidden ${colors.bg} ${colors.text}`}>
+      {/* Shiny overlay effects for dark mode */}
+      {isDark && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-tl from-blue-500/[0.02] via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/[0.01] via-transparent to-transparent pointer-events-none"></div>
+        </>
+      )}
+      
       {/* Mobile Top Navigation - visible only on mobile */}
       <div className={`md:hidden ${colors.bgSecondary} border-b ${colors.border} fixed top-0 left-0 right-0 z-50 shadow-sm`}>
         <div className="flex items-center justify-between px-4 py-3">
